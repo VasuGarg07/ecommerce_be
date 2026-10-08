@@ -1,5 +1,7 @@
 from flask import Flask, jsonify
 from db import init_db, get_db_conn
+from utils.utils import ApiError, error_handler
+from routes.users import users_bp
 
 app = Flask(__name__)
 
@@ -18,6 +20,15 @@ def health_check():
         print(f"Error: {e}")
         return jsonify({"status": "unhealthy", "error": "Something is wrong. Please check logs"}), 500
 
+app.register_blueprint(users_bp)
+
+@app.errorhandler(ApiError)
+def handle_api_error(error):
+    return error_handler(
+        error.message,
+        error.status_code,
+        error.errors
+    )
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
